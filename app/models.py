@@ -11,10 +11,10 @@ class User(UserMixin, db.Model):
     dob = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
     user_details = db.Column(db.String(150))
-    events = db.relationship('UserToEvent', back_populates='User', lazy=True)
+    events = db.relationship('UserToEvent', back_populates='user', lazy=True)
 
     def __repr__(self):
-        return '<User {}>'.format(self.username)
+        return '<User {}>'.format(self.email)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -34,6 +34,48 @@ class Post(db.Model):
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
+
+
+class Event(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    location = db.Column(db.String)
+    title = db.Column(db.String(64))
+    start_time_date = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    organizer = db.Column(db.Integer, db.ForeignKey('user.id'))
+    attendees = db.relationship("UserToEvent", back_populates='event', lazy=True)
+
+    def __repr__(self):
+        return '<Event {}>'.format(self.title)
+
+
+class Friends(db.Model):
+    user_id = db.Column(db.Integer, primary_key=True)
+    friend_id = db.Column(db.Integer, primary_key=True)
+
+    def __repr__(self):
+        return '<Friends {}>'.format(self.user_id)
+
+
+class Notifications(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+    type = db.Column(db.String(64))
+
+    def __repr__(self):
+        return '<Notifications {}>'.format(self.id)
+
+
+class UserToEvent(db.Model):
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), primary_key=True)
+    event_id = db.Column(db.Integer, db.ForeignKey('event.id'), primary_key=True)
+    extra_data = db.Column(db.String(50))
+    event = db.relationship("Event", back_populates="attendees")
+    user = db.relationship("User", back_populates="events")
+
+    def __repr__(self):
+        return '<UserToEvent {}>'.format(self.id)
 
 
 @login.user_loader
