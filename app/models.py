@@ -56,7 +56,7 @@ class Friends(db.Model):
         return '<Friends {}>'.format(self.user_id)
 
 
-class Notifications(db.Model):
+class Notification(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     recipient_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     sender_id = db.Column(db.Integer, db.ForeignKey('user.id'))
