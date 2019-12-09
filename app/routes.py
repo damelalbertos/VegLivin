@@ -4,7 +4,7 @@ from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm
-from app.models import User, Event, UserToEvent , Post
+from app.models import User, Event, UserToEvent , Post , Friends, Notification
 
 
 @app.route('/')
@@ -12,7 +12,7 @@ from app.models import User, Event, UserToEvent , Post
 @login_required
 def index():
     pass
-    return render_template('index.html', title='Home', posts=posts)
+    return render_template('index.html', title='Home')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -21,7 +21,7 @@ def login():
         return redirect(url_for('index'))
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(username=form.username.data).first()
+        user = User.query.filter_by(email=form.email.data).first()
         if user is None or not user.check_password(form.password.data):
             flash('Invalid username or password')
             return redirect(url_for('login'))
@@ -33,51 +33,49 @@ def login():
     return render_template('login.html', title='Sign In', form=form)
 
 
+@app.route('/registration', methods=['GET', 'POST'])
+def registration():
+    if current_user.is_authenticated:
+        return redirect(url_for('index'))
+    form = RegistrationForm()
+    if form.validate_on_submit():
+        person = User(first_name=form.firstname.data, last_name=form.lastname.data, dob=form.dob.data, email=form.email.data)
+        person.set_password(form.password.data)
+        db.session.add(person)
+        db.session.commit()
+        flash('Congratulations, you are now a registered user!')
+        return redirect(url_for('login'))
+    return render_template('register.html', title='Sign up', form=form)
+
+
 @app.route('/logout')
 def logout():
     logout_user()
     return redirect(url_for('index'))
 
 
-@app.route('/register', methods=['GET', 'POST'])
-def register():
-    if current_user.is_authenticated:
-        return redirect(url_for('index'))
-    form = RegistrationForm()
-    if form.validate_on_submit():
-        user = User(username=form.username.data, email=form.email.data)
-        user.set_password(form.password.data)
-        db.session.add(user)
-        db.session.commit()
-        flash('Congratulations, you are now a registered user!')
-        return redirect(url_for('login'))
-    return render_template('register.html', title='Register', form=form)
-
-
-@app.route('/user/<username>')
+@app.route('/user/<email>')
 @login_required
-def user(username):
-    user = User.query.filter_by(username=username).first_or_404()
-    posts = [
-        {'author': user, 'body': 'Test post #1'},
-        {'author': user, 'body': 'Test post #2'}
-    ]
-    return render_template('user.html', user=user, posts=posts)
+def user(email):
+    user = User.query.filter_by(email=email).first_or_404()
+    friends = Friends.query.filter_by(user_id=user.id).all()
+    posts = user.posts
+    return render_template('user.html', user=user, posts=posts, friends=friends)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])
 @login_required
 def edit_profile():
-    form = EditProfileForm(current_user.username)
+    form = EditProfileForm()
     if form.validate_on_submit():
-        current_user.username = form.username.data
-        current_user.about_me = form.about_me.data
+        current_user.email = form.email.data
+        current_user.user_details = form.v_Status.data
         db.session.commit()
         flash('Your changes have been saved.')
-        return redirect(url_for('edit_profile'))
+        return redirect(url_for('user', email=current_user.email))
     elif request.method == 'GET':
-        form.username.data = current_user.username
-        form.about_me.data = current_user.about_me
+        form.email.data = current_user.email
+        form.v_Status.data = current_user.user_details
     return render_template('edit_profile.html', title='Edit Profile', form=form)
 
 
@@ -104,21 +102,32 @@ def reset_db():
         db.session.execute(table.delete())
     db.session.commit()
 
-    dt1 = datetime(2019, 10, 19)
-    dt2 = datetime(2020, 10, 1)
-    dt3 = datetime(2019, 4, 3)
+    dt1 = datetime(1997, 1, 9)
+    dt2 = datetime(1998, 1, 11)
+    dt3 = datetime(2000, 4, 13)
 
-    u1 = User(firstName='Amber', lastName='Elliott', DOB=10/5/00, v_Status='Vegan', email="Amber@gmail.com")
-    u2 = User(firstName='Frank', lastName='Hood', DOB=6/14/87, v_Status='Flexitarian', email="Frank@gmail.com")
-    u3 = User(firstName='Manon', lastName='Avery', DOB=12/5/19, v_Status='Vegetarian', email="Mano @gmail.com")
+    dt4 = datetime(2019, 10, 19)
+    dt5 = datetime(2020, 10, 1)
+    dt6 = datetime(2019, 4, 3)
 
-    e1 = Event(eventName='Vegan Pop-Up', location='Brooklyn, Ny', organizer='Louis Garner', dateTime=dt1)
-    e2 = Event(eventName='Healthy Eating', location='Bronx, Ny', organizer='Tomas Jennings', dateTime=dt2)
-    e3 = Event(eventName='Plant-Based Plantluck', location='Ithaca, Ny', organizer='Tobey Winter', dateTime=dt3)
+    dt7 = datetime(2019, 12, 19)
+    dt8 = datetime(2019, 12, 20)
+    dt9 = datetime(2019, 12, 20)
+    dt10 = datetime(2019, 12, 21)
 
-    p1 = Post(post_details="I am looking for a vegan event for a kid", likes=5, comments=6, favorites=7, User=u1)
-    p2 = Post(likes=20, comments=0, favorites=1, User=u2)
-    p3 = Post(likes=100, comments=30, favorites=20, User=u3)
+
+
+    e1 = Event(title='Vegan Pop-Up', location='Brooklyn, Ny', organizer='Louis Garner', start_time_date=dt4)
+    e2 = Event(title='Healthy Eating', location='Bronx, Ny', organizer='Tomas Jennings', start_time_date=dt5)
+    e3 = Event(title='Plant-Based Plantluck', location='Ithaca, Ny', organizer='Tobey Winter', start_time_date=dt6)
+
+    p1 = Post(post_details="I am looking for a vegan event for a kid", likes=5, comments=6, favorites=7)
+    p2 = Post(post_details="I hosting this event about healthy eating, please check it out", likes=20, comments=0, favorites=1)
+    p3 = Post(post_details="Hey I am new to the site and looking for friends", likes=100, comments=30, favorites=20)
+
+    u1 = User(first_name='Amber', last_name='Elliott', email="Amber@gmail.com", dob=dt1, user_details='Vegan', posts=[p1])
+    u2 = User(first_name='Frank', last_name='Hood', email="Frank@gmail.com", dob=dt2, user_details='Flexitarian', posts=[p2])
+    u3 = User(first_name='Manon', last_name='Avery', email="Manon@gmail.com", dob=dt3, user_details='Vegetarian', posts=[p3])
 
     u2e1 = UserToEvent(user=u1, event=e1)
     u2e2 = UserToEvent(user=u1, event=e2)
@@ -126,6 +135,23 @@ def reset_db():
     u2e4 = UserToEvent(user=u3, event=e3)
 
     db.session.add_all([u1, u2, u3, e1, e2, e3, p1, p2, p3, u2e1, u2e2, u2e3, u2e4])
+    db.session.commit()
+
+    f1 = Friends(user_id=u1.id, friend_id=u2.id)
+    f2 = Friends(user_id=u1.id, friend_id=u3.id)
+    f3 = Friends(user_id=u2.id, friend_id=u3.id)
+
+    n1 = Notification(recipient_id=u1.id, sender_id=u2.id, timestamp=dt7, type='friend request')
+    n2 = Notification(recipient_id=u1.id, sender_id=u2.id, timestamp=dt8, type='message')
+    n3 = Notification(recipient_id=u1.id, sender_id=u3.id, timestamp=dt9, type='friend request')
+    n4 = Notification(recipient_id=u2.id, sender_id=u3.id, timestamp=dt10, type='friend request')
+
+    db.session.add_all([f1, f2, f3, n1, n2, n3, n4])
+
+    u1.set_password("123abc")
+    u2.set_password("xyz")
+    u3.set_password("qwerty")
+
     db.session.commit()
 
     return redirect(url_for('index'))
