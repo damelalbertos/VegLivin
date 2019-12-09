@@ -4,7 +4,8 @@
     <table>
         <tr valign="top">
             <td>
-                <h1>User: {{ user.email }}</h1>
+                <h1><a href="VegLivin">heading</a></h1>
+                <h2>User: {{ user.email }}</h2>
                 {% if user.user_details %}<p>{{ user.user_details }}</p>{% endif %}
                 <p>{{ user.first_name }} has, {{ friends|length }} friends.</p>
                 {% if user == current_user %}
