@@ -15,6 +15,7 @@ class User(UserMixin, db.Model):
     user_details = db.Column(db.String(150))
     events = db.relationship('UserToEvent', back_populates='user', lazy=True)
 
+
     def __repr__(self):
         return '<User {}>'.format(self.email)
 
