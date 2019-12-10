@@ -26,7 +26,7 @@ def validate_username(username):
 class RegistrationForm(FlaskForm):
     firstname = StringField('Firstname', validators=[DataRequired()])
     lastname = StringField('Lastname', validators=[DataRequired()])
-    #dob = DateTimeField('DOB', format='%Y-%m-%d', validators=[DataRequired()])
+    dob = DateTimeField('DOB', format='%m/%d/%Y', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()])
     password = PasswordField('Password', validators=[DataRequired()])
     submit = SubmitField('Sign up')
