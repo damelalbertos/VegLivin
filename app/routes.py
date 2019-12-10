@@ -95,8 +95,8 @@ def home():
 
 @app.route('/reset_db')
 def reset_db():
-    if current_user.is_authenticated:
-        return redirect(url_for('reset_db'))
+    # if current_user.is_authenticated:
+    #     return redirect(url_for('reset_db'))
     # clear all data from all tables
     meta = db.metadata
     for table in reversed(meta.sorted_tables):

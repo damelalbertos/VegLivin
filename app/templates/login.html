@@ -2,22 +2,22 @@
 {% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+
     <h1><span style="font-family: Bedrock; font-size: larger; color: #3A7734 "> <meta charset="utf-8">VegLivin</span><br /></h1>
     <h2>Sign in</h2>
-<p>
-    <span style="color: darkslategrey; front-size: medium ">Welcome, to VegLivin!</span><br/>
-</p>
-<p>
-    <span style="color: darkslategrey; ">
-    Our site prompts people who are looking for a safe space to
-    chat, and find events with others who are vegans, vegetarian and people who wants to find healthy ways of living.
-    </span><br/>
-</p>
-
+        <p>
+        <span style="color: darkgreen; front-size: medium ">Welcome, to VegLivin!</span><br/>
+        </p>
+        <p>
+<!--        <span style="color: darkgreen; ">-->
+<!--        Our site prompts people who are looking for a safe space to-->
+<!--        post, and find events with others who are vegans, vegetarian and people who wants to find healthy ways of living.-->
+<!--        </span><br/>-->
+        </p>
     <div class="row">
         <div class="col-md-4">
             {{ wtf.quick_form(form) }}
         </div>
     </div>
-    <p>New User? <a href="{{ url_for('registration') }}">Click to Register!</a></p>
+    <p> New User? <a href="{{ url_for('registration') }}">Click to Register!</a></p>
 {% endblock %}
