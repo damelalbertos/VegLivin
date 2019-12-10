@@ -11,8 +11,15 @@ from app.models import User, Event, UserToEvent , Post , Friends, Notification
 @app.route('/index')
 @login_required
 def index():
+    stream = Post.select().limit(100)
+    return render_template('index.html', title='Home', stream=stream)
+
+
+@app.route('/events/<event>')
+@login_required
+def events():
     pass
-    return render_template('index.html', title='Home')
+    return render_template('events.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -39,7 +46,7 @@ def registration():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        person = User(first_name=form.firstname.data, last_name=form.lastname.data, dob=form.dob.data, email=form.email.data)
+        person = User(first_name=form.firstname.data, last_name=form.lastname.data, email=form.email.data) #, dob=form.dob.data
         person.set_password(form.password.data)
         db.session.add(person)
         db.session.commit()
