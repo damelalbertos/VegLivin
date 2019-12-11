@@ -1,12 +1,19 @@
+import os
 from datetime import datetime
 
-#from app.main import bp
+# from app.main import bp
 from flask import render_template, flash, redirect, url_for, request, session, current_app
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
+from werkzeug.utils import secure_filename
+
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
 from app.models import User, Event, UserToEvent, Post, Friends, Notification
+
+app.config["IMAGE_UPLOADS"] = "/mnt/c/wsl/projects/pythonise/tutorials/flask_series/app/app/static/img/uploads"
+app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["JPEG", "JPG", "PNG", "GIF"]
+app.config["MAX_IMAGE_FILESIZE"] = 0.5 * 1024 * 1024
 
 
 @app.route('/')
@@ -23,7 +30,7 @@ def index():
     page = request.args.get('page', 1, type=int)
     posts = current_user.followed_posts().paginate(page, current_app.config['POSTS_PER_PAGE'], False)
     next_url = url_for('index', page=posts.next_num)
-    if posts.has_next else None
+    # if posts.has_next else None
 
     return render_template('index.html', title='Home', posts=posts)
 
@@ -110,6 +117,46 @@ def new_event():
 def home():
     pass
     return render_template('Home.html', title='Home')
+
+
+def allowed_image(filename):
+    if not "." in filename:
+        return False
+    ext = filename.rsplit(".", 1)[1]
+    if ext.upper() in app.config["ALLOWED_IMAGE_EXTENSIONS"]:
+        return True
+    else:
+        return False
+
+
+def allowed_image_filesize(filesize):
+    if int(filesize) <= app.config["MAX_IMAGE_FILESIZE"]:
+        return True
+    else:
+        return False
+
+
+@app.route("/upload-image", methods=["GET", "POST"])
+def upload_image():
+    if request.method == "POST":
+        if request.files:
+            if "filesize" in request.cookies:
+                if not allowed_image_filesize(request.cookies["filesize"]):
+                    print("Filesize exceeded maximum limit")
+                    return redirect(request.url)
+                image = request.files["image"]
+                if image.filename == "":
+                    print("No filename")
+                    return redirect(request.url)
+                if allowed_image(image.filename):
+                    filename = secure_filename(image.filename)
+                    image.save(os.path.join(app.config["IMAGE_UPLOADS"], filename))
+                    print("Image saved")
+                    return redirect(request.url)
+                else:
+                    print("That file extension is not allowed")
+                    return redirect(request.url)
+    return render_template("public/upload_image.html")
 
 
 @app.route('/reset_db')
