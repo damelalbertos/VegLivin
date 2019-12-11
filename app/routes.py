@@ -1,23 +1,34 @@
 from datetime import datetime
 
-import bp as bp
-from flask import render_template, flash, redirect, url_for, request
+#from app.main import bp
+from flask import render_template, flash, redirect, url_for, request, session, current_app
 from flask_login import login_user, logout_user, current_user, login_required
 from werkzeug.urls import url_parse
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, EditProfileForm
-from app.models import User, Event, UserToEvent , Post , Friends, Notification
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
+from app.models import User, Event, UserToEvent, Post, Friends, Notification
 
 
 @app.route('/')
 @app.route('/index')
 @login_required
 def index():
-    stream = Post.select().limit(100)
-    return render_template('index.html', title='Home', stream=stream)
+    user_id = session["user_id"]
+    form = PostForm()
+    if form.validate_on_submit():
+        post = Post(user_id=user_id, post_details=form.content.data, timestamp=datetime.datetime.now().isoformat())
+        db.session.add(post)
+        db.session.commit()
+        return redirect(url_for('index'))
+    page = request.args.get('page', 1, type=int)
+    posts = current_user.followed_posts().paginate(page, current_app.config['POSTS_PER_PAGE'], False)
+    next_url = url_for('index', page=posts.next_num)
+    if posts.has_next else None
+
+    return render_template('index.html', title='Home', posts=posts)
 
 
-@app.route('/events/<event>')
+@app.route('/events')
 @login_required
 def events():
     pass
@@ -48,7 +59,8 @@ def registration():
         return redirect(url_for('index'))
     form = RegistrationForm()
     if form.validate_on_submit():
-        person = User(first_name=form.firstname.data, last_name=form.lastname.data, email=form.email.data) #, dob=form.dob.data
+        person = User(first_name=form.firstname.data, last_name=form.lastname.data,
+                      email=form.email.data)  # , dob=form.dob.data
         person.set_password(form.password.data)
         db.session.add(person)
         db.session.commit()
@@ -124,19 +136,21 @@ def reset_db():
     dt9 = datetime(2019, 12, 20)
     dt10 = datetime(2019, 12, 21)
 
-
-
     e1 = Event(title='Vegan Pop-Up', location='Brooklyn, Ny', organizer='Louis Garner', start_time_date=dt4)
     e2 = Event(title='Healthy Eating', location='Bronx, Ny', organizer='Tomas Jennings', start_time_date=dt5)
     e3 = Event(title='Plant-Based Plantluck', location='Ithaca, Ny', organizer='Tobey Winter', start_time_date=dt6)
 
     p1 = Post(post_details="I am looking for a vegan event for a kid", likes=5, comments=6, favorites=7)
-    p2 = Post(post_details="I hosting this event about healthy eating, please check it out", likes=20, comments=0, favorites=1)
+    p2 = Post(post_details="I hosting this event about healthy eating, please check it out", likes=20, comments=0,
+              favorites=1)
     p3 = Post(post_details="Hey I am new to the site and looking for friends", likes=100, comments=30, favorites=20)
 
-    u1 = User(first_name='Amber', last_name='Elliott', email="Amber@gmail.com", dob=dt1, user_details='Vegan', posts=[p1])
-    u2 = User(first_name='Frank', last_name='Hood', email="Frank@gmail.com", dob=dt2, user_details='Flexitarian', posts=[p2])
-    u3 = User(first_name='Manon', last_name='Avery', email="Manon@gmail.com", dob=dt3, user_details='Vegetarian', posts=[p3])
+    u1 = User(first_name='Amber', last_name='Elliott', email="Amber@gmail.com", dob=dt1, user_details='Vegan',
+              posts=[p1])
+    u2 = User(first_name='Frank', last_name='Hood', email="Frank@gmail.com", dob=dt2, user_details='Flexitarian',
+              posts=[p2])
+    u3 = User(first_name='Manon', last_name='Avery', email="Manon@gmail.com", dob=dt3, user_details='Vegetarian',
+              posts=[p3])
 
     u2e1 = UserToEvent(user=u1, event=e1)
     u2e2 = UserToEvent(user=u1, event=e2)
