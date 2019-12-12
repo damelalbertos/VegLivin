@@ -143,6 +143,37 @@ def allowed_image_filesize(filesize):
     else:
         return False
 
+@app.route('/follow/<email>')
+@login_required
+def follow(email):
+    user = User.query.filter_by(email=current_user.email).first()
+    if user is None:
+        flash('User {} not found.'.format(email))
+        return redirect(url_for('index'))
+    if user == current_user:
+        flash('You cannot follow yourself!')
+        return redirect(url_for('user', email=email))
+    current_user.follow(user)
+    db.session.commit()
+    flash('You are following {}!'.format(email))
+    return redirect(url_for('user', email=email))
+
+
+@app.route('/unfollow/<email>')
+@login_required
+def unfollow(email):
+    user = User.query.filter_by(email=email).first()
+    if user is None:
+        flash('User {} not found.'.format(email))
+        return redirect(url_for('index'))
+    if user == current_user:
+        flash('You cannot unfollow yourself!')
+        return redirect(url_for('user', email=current_user.email))
+    current_user.unfollow(user)
+    db.session.commit()
+    flash('You are not following {}.'.format(email))
+    return redirect(url_for('user', email=email))
+
 
 @app.route("/upload-image", methods=["GET", "POST"])
 def upload_image():
@@ -215,16 +246,12 @@ def reset_db():
     db.session.add_all([u1, u2, u3, e1, e2, e3, p1, p2, p3, u2e1, u2e2, u2e3, u2e4])
     db.session.commit()
 
-    f1 = Friends(user_id=u1.id, friend_id=u2.id)
-    f2 = Friends(user_id=u1.id, friend_id=u3.id)
-    f3 = Friends(user_id=u2.id, friend_id=u3.id)
+    n1 = Notification(recipient_id=u1.id, sender_id=u2.id, timestamp=dt7, type='following')
+    n2 = Notification(recipient_id=u1.id, sender_id=u2.id, timestamp=dt8, type='commented')
+    n3 = Notification(recipient_id=u1.id, sender_id=u3.id, timestamp=dt9, type='following')
+    n4 = Notification(recipient_id=u2.id, sender_id=u3.id, timestamp=dt10, type='like post')
 
-    n1 = Notification(recipient_id=u1.id, sender_id=u2.id, timestamp=dt7, type='friend request')
-    n2 = Notification(recipient_id=u1.id, sender_id=u2.id, timestamp=dt8, type='message')
-    n3 = Notification(recipient_id=u1.id, sender_id=u3.id, timestamp=dt9, type='friend request')
-    n4 = Notification(recipient_id=u2.id, sender_id=u3.id, timestamp=dt10, type='friend request')
-
-    db.session.add_all([f1, f2, f3, n1, n2, n3, n4])
+    db.session.add_all([n1, n2, n3, n4])
 
     u1.set_password("123abc")
     u2.set_password("xyz")
