@@ -25,7 +25,15 @@
                         <li><a href="{{ url_for('login') }}">Login</a></li>
                     {% else %}
                         <li><a href="{{ url_for('events') }}">Events</a></li>
-                    <!--<li><a href="{{ url_for('notifications') }}">Notifications</a></li>-->
+                        <li>
+                            <a href="{{ url_for('notifications') }}">
+                                {{ _('Messages') }}
+                                {% set new_likes = current_user.new_messages() %}
+                                {% if new_likes %}
+                                <span class="badge">{{ new_messages }}</span>
+                                {% endif %}
+                            </a>
+                        </li>
                         <li><a href="{{ url_for('profile') }}">Profile</a></li>
                     {% endif %}
                 </ul>

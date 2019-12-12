@@ -15,6 +15,8 @@ class User(UserMixin, db.Model):
     liked = db.relationship('PostLike', backref='user', lazy='dynamic')
     user_details = db.Column(db.String(150))
     events = db.relationship('UserToEvent', back_populates='user', lazy=True)
+    friends = db.relationship('User', secondary=Friends, primaryjoin=(Friends.c.user_id == id), secondaryjoin=(Friends.c.friend_id == id),
+                              backref=db.backref('Friends', lazy='dynamic'), lazy='dynamic')
 
     def __repr__(self):
         return '<User {}>'.format(self.email)
@@ -55,6 +57,10 @@ class PostLike(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
+    timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
+
+    def __repr__(self):
+        return '<PostLike {}>'.format(self.body)
 
 
 class Event(db.Model):
