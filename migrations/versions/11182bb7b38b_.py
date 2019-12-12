@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: e31d2ad41304
+Revision ID: 11182bb7b38b
 Revises: 
-Create Date: 2019-12-12 05:44:46.179964
+Create Date: 2019-12-12 15:06:29.949227
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e31d2ad41304'
+revision = '11182bb7b38b'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -40,13 +40,11 @@ def upgrade():
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_event_start_time_date'), 'event', ['start_time_date'], unique=False)
-    op.create_table('friends',
-    sa.Column('id', sa.Integer(), nullable=False),
-    sa.Column('user_id', sa.Integer(), nullable=True),
-    sa.Column('friend_id', sa.Integer(), nullable=True),
-    sa.ForeignKeyConstraint(['friend_id'], ['user.id'], ),
-    sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
-    sa.PrimaryKeyConstraint('id')
+    op.create_table('followers',
+    sa.Column('follower_id', sa.Integer(), nullable=True),
+    sa.Column('followed_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['followed_id'], ['user.id'], ),
+    sa.ForeignKeyConstraint(['follower_id'], ['user.id'], )
     )
     op.create_table('notification',
     sa.Column('id', sa.Integer(), nullable=False),
@@ -100,7 +98,7 @@ def downgrade():
     op.drop_table('post')
     op.drop_index(op.f('ix_notification_timestamp'), table_name='notification')
     op.drop_table('notification')
-    op.drop_table('friends')
+    op.drop_table('followers')
     op.drop_index(op.f('ix_event_start_time_date'), table_name='event')
     op.drop_table('event')
     op.drop_index(op.f('ix_user_email'), table_name='user')

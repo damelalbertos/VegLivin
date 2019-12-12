@@ -1,5 +1,5 @@
 from app import app, db
-from app.models import User, UserToEvent, Friends, Post, Notification, Event
+from app.models import User, UserToEvent, Post, Notification, Event
 
 
 @app.shell_context_processor

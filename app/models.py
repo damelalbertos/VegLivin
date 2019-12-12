@@ -3,6 +3,9 @@ from datetime import datetime
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
 
+followers = db.Table('followers', db.Column('follower_id', db.Integer, db.ForeignKey('user.id')),
+                     db.Column('followed_id', db.Integer, db.ForeignKey('user.id')))
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -15,8 +18,9 @@ class User(UserMixin, db.Model):
     liked = db.relationship('PostLike', backref='user', lazy='dynamic')
     user_details = db.Column(db.String(150))
     events = db.relationship('UserToEvent', back_populates='user', lazy=True)
-    friends = db.relationship('User', secondary=Friends, primaryjoin=(Friends.c.user_id == id), secondaryjoin=(Friends.c.friend_id == id),
-                              backref=db.backref('Friends', lazy='dynamic'), lazy='dynamic')
+    followed = db.relationship('User', secondary=followers, primaryjoin=(followers.c.follower_id == id),
+                               secondaryjoin=(followers.c.followed_id == id),
+                               backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
     def __repr__(self):
         return '<User {}>'.format(self.email)
@@ -38,6 +42,23 @@ class User(UserMixin, db.Model):
 
     def has_liked_post(self, post):
         return PostLike.query.filter(PostLike.user_id == self.id, PostLike.post_id == post.id).count() > 0
+
+    def follow(self, user):
+        if not self.is_following(user):
+            self.followed.remove(user)
+
+    def unfollow(self, user):
+        if self.is_following(user):
+            self.followed.remove(user)
+
+    def is_following(self, user):
+        return self.followed.filter(followers.c.followed_id == user.id).count() > 0
+
+    def followed_posts(self):
+        followed = Post.query.join(followers, (followers.c.followed_id == Post.user_id)).filter(
+            followers.c.follower_id == self.id)
+        own = Post.query.filter_by(user_id=self.id)
+        return followed.union(own).order_by(Post.timestamp.desc())
 
 
 class Post(db.Model):
@@ -75,13 +96,13 @@ class Event(db.Model):
         return '<Event {}>'.format(self.title)
 
 
-class Friends(db.Model):
-    id = db.Column(db.Integer, primary_key=True, nullable=False)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    friend_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-
-    def __repr__(self):
-        return '<Friends {}>'.format(self.id)
+# class Friends(db.Model):
+#     id = db.Column(db.Integer, primary_key=True, nullable=False)
+#     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#     friend_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+#
+#     def __repr__(self):
+#         return '<Friends {}>'.format(self.id)
 
 
 class Notification(db.Model):

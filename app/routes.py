@@ -9,7 +9,7 @@ from werkzeug.utils import secure_filename
 
 from app import app, db
 from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm
-from app.models import User, Event, UserToEvent, Post, Friends, Notification
+from app.models import User, Event, UserToEvent, Post, Notification
 
 app.config["IMAGE_UPLOADS"] = "/mnt/c/wsl/projects/pythonise/tutorials/flask_series/app/app/static/img/uploads"
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["JPEG", "JPG", "PNG", "GIF"]
@@ -41,6 +41,13 @@ def index():
 def events():
     pass
     return render_template('events.html')
+
+
+@app.route('/likes')
+@login_required
+def likes():
+    pass
+    return render_template('likes.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -87,9 +94,9 @@ def logout():
 @login_required
 def user(email):
     user = User.query.filter_by(email=email).first_or_404()
-    friends = Friends.query.filter_by(user_id=user.id).all()
+    followers = User.followed
     posts = user.posts
-    return render_template('user.html', user=user, posts=posts, friends=friends)
+    return render_template('user.html', user=user, posts=posts, followers=followers)
 
 
 @app.route('/edit_profile', methods=['GET', 'POST'])

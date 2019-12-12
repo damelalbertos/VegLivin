@@ -26,12 +26,13 @@
                     {% else %}
                         <li><a href="{{ url_for('events') }}">Events</a></li>
                         <li>
-                            <a href="{{ url_for('notifications') }}">
+                            <a href="{{ url_for('likes') }}">
                                 {{ _('Messages') }}
                                 {% set new_likes = current_user.new_messages() %}
-                                {% if new_likes %}
-                                <span class="badge">{{ new_messages }}</span>
-                                {% endif %}
+                                <span id="Like_count" class="badge" sty;e="visibility: {% if new_likes %}visible
+                                                     {% else %}hidden {% endif %};">
+                                    {{ new_messages }}
+                                </span>
                             </a>
                         </li>
                         <li><a href="{{ url_for('profile') }}">Profile</a></li>
@@ -45,11 +46,11 @@
 {% block content %}
     <div class="container">
         {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-info" role="alert">{{ message }}</div>
-            {% endfor %}
-        {% endif %}
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-info" role="alert">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
         {% endwith %}
 
         <div class="container">
