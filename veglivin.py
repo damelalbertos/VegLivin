@@ -1,2 +1,8 @@
-from app import app
-from app.models import User, UserToEvent, Friends, Post, Notification, Event
+from app import app, db
+from app.models import User, UserToEvent, Post, Notification, Event
+
+
+@app.shell_context_processor
+def make_shell_context():
+    return {'db': db, 'User': User, 'Post': Post, 'UserToEvent': UserToEvent,
+            'Notification': Notification, 'Event': Event}

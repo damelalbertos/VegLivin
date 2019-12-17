@@ -1,0 +1,5 @@
+<!--                {% elif not current_user.is_following(user) %} -->
+<!--                <p><a href="{{ url_for('friend', email=user.email) }}">Friend</a></p>-->
+<!--                {% else %}-->
+<!--                <p><a href="{{ url_for('unfriend', email=user.email) }}">Unfriend</a></p>-->
+<!--                {% endif %} -->
