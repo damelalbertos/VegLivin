@@ -8,8 +8,8 @@ from werkzeug.urls import url_parse
 from werkzeug.utils import secure_filename
 
 from app import app, db
-from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, EventForm
-from app.models import User, Event, UserToEvent, Post
+from app.forms import LoginForm, RegistrationForm, EditProfileForm, PostForm, CommentForm
+from app.models import User, Event, UserToEvent, Post, Comment, PostLike
 
 app.config["IMAGE_UPLOADS"] = "/mnt/c/wsl/projects/pythonise/tutorials/flask_series/app/app/static/img/uploads"
 app.config["ALLOWED_IMAGE_EXTENSIONS"] = ["JPEG", "JPG", "PNG", "GIF"]
@@ -81,18 +81,38 @@ def unfollow(first_name):
     return redirect(url_for('user', first_name=first_name))
 
 
-@app.route('/events')
-@login_required
-def events():
-    pass
-    return render_template('events.html')
+# @app.route('/events')
+# @login_required
+# def events():
+#     pass
+#     return render_template('events.html')
 
 
-@app.route('/likes')
+@app.route('/like/<int:post_id>/<action>')
 @login_required
-def likes():
-    pass
-    return render_template('likes.html')
+def like_action(post_id, action):
+    post = Post .query.filter_by(id=post_id).first_or_404()
+    if action == 'like':
+        current_user.like_post(post)
+        db.session.commit()
+    if action == 'unlike':
+        current_user.unlike_post(post)
+        db.session.commit()
+    return redirect(request.referrer)
+
+
+@app.route('/post/<int:post_id>/comment', methods=['GET', 'POST'])
+@login_required
+def comment_post(post_id):
+    post = Post.query.get_or_404(post_id)
+    form = CommentForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            comment = Comment(body=form.body.data, post_id=post.id)
+            db.session.add(comment)
+            db.session.commit()
+            return redirect(url_for('index', post_id=post.id))
+    return redirect(request.referrer)
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -165,10 +185,15 @@ def edit_profile():
     return render_template('edit_profile.html', title='Edit Profile', form=form)
 
 
-@app.route('/new_event', methods=['GET', 'POST'])
-def new_event():
-    pass
-    return render_template('new_event.html', title='New event')
+# @app.route('/new_event', methods=['GET', 'POST'])
+# def new_event():
+#     form = EventForm()
+#     if form.validate_on_submit():
+#         event = Event(title=form.name.data, start_time_date=form.date.data, organizer=current_user.first_name)
+#         db.session.add(event)
+#         db.session.commit()
+#         return redirect(url_for('events'))
+#     return render_template('new_event.html', title='New event')
 
 
 def allowed_image(filename):

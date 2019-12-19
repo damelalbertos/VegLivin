@@ -6,12 +6,30 @@
             </a>
         </td>
         <td>
-            <a href="{{ url_for('user', first_name=post.author.first_name) }}">
-                {{ post.author.first_name }}
+            <a href="{{ url_for('user', first_name=post.author.first_name, last_name = post.author.last_name) }}">
+                {{ post.author.first_name }} {{ post.author.last_name }}
             </a>
             said {{ moment(post.timestamp).fromNow() }}:
             <br>
             {{ post.post_details }}
+            <br>
+            {% if current_user.has_liked_post(post) %}
+                <a href="{{ url_for('like_action', post_id=post.id, action='unlike') }}">Unlike</a>
+            {% else %}
+                <a href="{{ url_for('like_action', post_id=post.id, action='like') }}">Like</a>
+            {% endif %}
+            {{ post.likes.count() }} likes
+            <br>
+            {% if post.comments %}
+                {% if post.comments.count() > 0 %}
+                    <h2>Comments</h2>
+                    <p>
+                    {% for comment in post.comments %}
+                        <p>{{ comment.body }}</p>
+                    {% endfor %}
+                    </p>
+                {% endif %}
+            {% endif %}
         </td>
     </tr>
 </table>

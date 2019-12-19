@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: 11182bb7b38b
+Revision ID: b453dfb1ee07
 Revises: 
-Create Date: 2019-12-12 15:06:29.949227
+Create Date: 2019-12-19 09:54:27.478371
 
 """
 from alembic import op
@@ -10,7 +10,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = '11182bb7b38b'
+revision = 'b453dfb1ee07'
 down_revision = None
 branch_labels = None
 depends_on = None
@@ -62,12 +62,18 @@ def upgrade():
     sa.Column('user_id', sa.Integer(), nullable=True),
     sa.Column('post_details', sa.String(length=150), nullable=True),
     sa.Column('timestamp', sa.DateTime(), nullable=True),
-    sa.Column('comments', sa.Integer(), nullable=True),
-    sa.Column('favorites', sa.Integer(), nullable=True),
     sa.ForeignKeyConstraint(['user_id'], ['user.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_post_timestamp'), 'post', ['timestamp'], unique=False)
+    op.create_table('comment',
+    sa.Column('id', sa.Integer(), nullable=False),
+    sa.Column('body', sa.String(length=100), nullable=True),
+    sa.Column('timestamp', sa.DateTime(), nullable=True),
+    sa.Column('post_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['post_id'], ['post.id'], ),
+    sa.PrimaryKeyConstraint('id')
+    )
     op.create_table('post_like',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('user_id', sa.Integer(), nullable=True),
@@ -94,6 +100,7 @@ def downgrade():
     op.drop_table('user_to_event')
     op.drop_index(op.f('ix_post_like_timestamp'), table_name='post_like')
     op.drop_table('post_like')
+    op.drop_table('comment')
     op.drop_index(op.f('ix_post_timestamp'), table_name='post')
     op.drop_table('post')
     op.drop_index(op.f('ix_notification_timestamp'), table_name='notification')

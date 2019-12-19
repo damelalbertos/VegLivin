@@ -17,23 +17,12 @@
             </div>
             <div class="collapse navbar-collapse" id="myNavbar">
                 <ul class="nav navbar-nav navbar-right">
-                    <li class="active"><a href="{{ url_for('index') }}"><img src="/app/assets/house.svg" alt="" width="32" height="32" title="Calendar">Home</a></li>
+                    <li class="active"><a href="{{ url_for('index') }}">Home</a></li>
                     <li><a href="{{ url_for('explore') }}">Explore</a></li>
                     {% if current_user.is_anonymous %}
                         <li><a href="{{ url_for('login') }}"><span class="glyphicon glyphicon-log-in"></span>Login</a></li>
                     {% else %}
-                        <li><a href="{{ url_for('events') }}"><img src="/app/assets/calendar.svg" alt="" width="32" height="32" title="Calendar">Events</a></li>
-{#                        <li>#}
-{#                            <a href="{{ url_for('likes') }}">#}
-{#                                {{ _('Messages') }}#}
-{#                                {% set new_likes = current_user.new_messages() %}#}
-{#                                <span id="Like_count" class="badge" sty;e="visibility: {% if new_likes %}visible#}
-{#                                                     {% else %}hidden {% endif %};">#}
-{#                                    {{ new_messages }}#}
-{#                                </span>#}
-{#                            </a>#}
-{#                        </li>#}
-                        <li><a href="{{ url_for('user', first_name=current_user.first_name) }}"><img src="/app/assets/person.svg" alt="" width="32" height="32" title="Calendar">Profile</a></li>
+                        <li><a href="{{ url_for('user', first_name=current_user.first_name) }}">Profile</a></li>
                     {% endif %}
                 </ul>
             </div>

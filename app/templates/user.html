@@ -4,8 +4,7 @@
     <table>
         <tr valign="top">
             <td>
-                <h1><a href="{{ url_for('index') }}"><span style="font-family: Bedrock; font-size: larger; color: #3A7734 "> <meta charset="utf-8">VegLivin</span><br/></a></h1>
-                <h2>User: {{ user.first_name }}</h2>
+                <h2>{{ user.first_name }} {{ user.last_name }}</h2>
                 {% if user.user_details %}<p>{{ user.user_details }}</p>{% endif %}
                 <p>{{ user.followers.count() }} followers, {{ user.followed.count() }} following.</p>
                 {% if user == current_user %}

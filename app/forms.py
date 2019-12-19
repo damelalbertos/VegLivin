@@ -69,3 +69,8 @@ class EventForm(FlaskForm):
     date = DateTimeField('Event Date', format='%m/%d/%Y', validators=[DataRequired])
     # image
     submit = SubmitField('Submit')
+
+
+class CommentForm(FlaskForm):
+    body = StringField("Post", validators=[DataRequired])
+    submit = SubmitField("Submit")

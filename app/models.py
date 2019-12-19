@@ -15,7 +15,7 @@ class User(UserMixin, db.Model):
     password_hash = db.Column(db.String(128))
     dob = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     posts = db.relationship('Post', backref='author', lazy='dynamic')
-    liked = db.relationship('PostLike', backref='user', lazy='dynamic')
+    liked = db.relationship('PostLike', foreign_keys='PostLike.user_id', backref='user', lazy='dynamic')
     user_details = db.Column(db.String(150))
     events = db.relationship('UserToEvent', back_populates='user', lazy=True)
     followed = db.relationship('User', secondary=followers, primaryjoin=(followers.c.follower_id == id),
@@ -67,8 +67,21 @@ class Post(db.Model):
     post_details = db.Column(db.String(150))
     timestamp = db.Column(db.DateTime, index=True, default=datetime.utcnow)
     likes = db.relationship('PostLike', backref='post', lazy='dynamic')
-    comments = db.Column(db.Integer)
-    favorites = db.Column(db.Integer)
+    comments = db.relationship('Comment', backref='title', lazy='dynamic')
+    # favorites = db.Column(db.Integer)
+
+    def get_comments(self):
+        return Comment.query.filter_by(post_id=post.id).order_by(Comment.timestamp.desc())
+
+    def __repr__(self):
+        return '<Post {}>'.format(self.body)
+
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True )
+    body = db.Column(db.String(100))
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+    post_id = db.Column(db.Integer, db.ForeignKey('post.id'))
 
     def __repr__(self):
         return '<Post {}>'.format(self.body)
