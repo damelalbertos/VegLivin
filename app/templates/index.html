@@ -1,13 +1,27 @@
 {% extends "base.html" %}
+{% import 'bootstrap/wtf.html' as wtf %}
 
 {% block app_content %}
+    <h1>Hi, {{ current_user.username }}</h1>
+    {% if form %}
+        {{ wtf.quick_form(form) }}
+    <br>
+    {% endif %}
     {% for post in posts %}
-    <article>
-        <h2>
-            <a href="{{url_for('index', username=post.user.username) }}">{{post.user.username}}</a>
-        </h2>
-        <i class="clock"></i><time data-time="{{ post.timestamp.timestamp() }}" class="distime" datetime="{{ post.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}">{{ post.timestamp..strftime('%Y-%m-%d %H:%M:%S') }}</time>
-        <a href="{{ url_for('view_post', post_id=post.id) }}" class="view">View</a>
-    </article>
+        {% include '_post.html' %}
     {% endfor %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> Newer posts
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    Older posts <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 {% endblock %}

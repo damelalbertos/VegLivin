@@ -47,8 +47,25 @@ class EditProfileForm(FlaskForm):
     v_Status = TextAreaField('V Status', validators=[Length(min=0, max=14)])
     submit = SubmitField('Submit')
 
+    def __init__(self, original_username, *args, **kwargs):
+        super(EditProfileForm, self).__init__(*args, **kwargs)
+        self.original_username = original_username
+
+    def validate_username(self, username):
+        if username.data != self.original_username:
+            user = User.query.filter_by(username=self.username.data).first()
+        if user is not None:
+            raise ValidationError('Please use a different username.')
+
 
 class PostForm(FlaskForm):
     content = TextAreaField("Post Here.", validators=[DataRequired(), Length(min=1, max=140)])
-    image = FileField("Image", validators=[FileAllowed(photos, 'Image Only!'), FileRequired('File was empty!')])
+    # image = FileField("Image", validators=[FileAllowed(photos, 'Image Only!'), FileRequired('File was empty!')])
+    submit = SubmitField('Submit')
+
+
+class EventForm(FlaskForm):
+    name = TextAreaField('Event Name', validators=[DataRequired()])
+    date = DateTimeField('Event Date', format='%m/%d/%Y', validators=[DataRequired])
+    # image
     submit = SubmitField('Submit')

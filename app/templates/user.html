@@ -5,16 +5,15 @@
         <tr valign="top">
             <td>
                 <h1><a href="{{ url_for('index') }}"><span style="font-family: Bedrock; font-size: larger; color: #3A7734 "> <meta charset="utf-8">VegLivin</span><br/></a></h1>
-                <h2>User: {{ user.email }}</h2>
+                <h2>User: {{ user.first_name }}</h2>
                 {% if user.user_details %}<p>{{ user.user_details }}</p>{% endif %}
-<!--                <p>{{ user.first_name }} has, {{ followers|length }} followers.</p>-->
                 <p>{{ user.followers.count() }} followers, {{ user.followed.count() }} following.</p>
                 {% if user == current_user %}
                 <p><a href="{{ url_for('edit_profile') }}">Edit your profile</a></p>
                 {% elif not current_user.is_following(user) %}
-                <p><a href="{{ url_for('follow', username=user.username) }}">Follow</a></p>
+                <p><a href="{{ url_for('follow', first_name=user.first_name) }}">Follow</a></p>
                 {% else %}
-                <p><a href="{{ url_for('unfollow', username=user.username) }}">Unfollow</a></p>
+                <p><a href="{{ url_for('unfollow', first_name=user.first_name) }}">Unfollow</a></p>
                 {% endif %}
             </td>
         </tr>
@@ -23,4 +22,18 @@
     {% for post in posts %}
         {% include '_post.html' %}
     {% endfor %}
+    <nav aria-label="...">
+        <ul class="pager">
+            <li class="previous{% if not prev_url %} disabled{% endif %}">
+                <a href="{{ prev_url or '#' }}">
+                    <span aria-hidden="true">&larr;</span> Newer posts
+                </a>
+            </li>
+            <li class="next{% if not next_url %} disabled{% endif %}">
+                <a href="{{ next_url or '#' }}">
+                    Older posts <span aria-hidden="true">&rarr;</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
 {% endblock %}

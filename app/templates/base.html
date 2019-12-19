@@ -5,37 +5,35 @@
 {% endblock %}
 
 {% block navbar %}
-    <nav class="navbar navbar-default">
-        <div class="container">
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
             <div class="navbar-header">
-                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
-                    <span class="sr-only">Toggle navigation</span>
+                <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#myNavbar">
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                     <span class="icon-bar"></span>
                 </button>
                 <a class="navbar-brand" href="{{ url_for('index') }}">VegLivin</a>
             </div>
-            <div class="collapse navbar-brand" id="bs-example-navbar-collapse-1">
-                <ul class="nav navbar-nav">
-                    <li><a href="{{ url_for('index') }}">Home</a> </li>
-                </ul>
+            <div class="collapse navbar-collapse" id="myNavbar">
                 <ul class="nav navbar-nav navbar-right">
+                    <li class="active"><a href="{{ url_for('index') }}"><img src="/app/assets/house.svg" alt="" width="32" height="32" title="Calendar">Home</a></li>
+                    <li><a href="{{ url_for('explore') }}">Explore</a></li>
                     {% if current_user.is_anonymous %}
-                        <li><a href="{{ url_for('login') }}">Login</a></li>
+                        <li><a href="{{ url_for('login') }}"><span class="glyphicon glyphicon-log-in"></span>Login</a></li>
                     {% else %}
-                        <li><a href="{{ url_for('events') }}">Events</a></li>
-                        <li>
-                            <a href="{{ url_for('likes') }}">
-                                {{ _('Messages') }}
-                                {% set new_likes = current_user.new_messages() %}
-                                <span id="Like_count" class="badge" sty;e="visibility: {% if new_likes %}visible
-                                                     {% else %}hidden {% endif %};">
-                                    {{ new_messages }}
-                                </span>
-                            </a>
-                        </li>
-                        <li><a href="{{ url_for('profile') }}">Profile</a></li>
+                        <li><a href="{{ url_for('events') }}"><img src="/app/assets/calendar.svg" alt="" width="32" height="32" title="Calendar">Events</a></li>
+{#                        <li>#}
+{#                            <a href="{{ url_for('likes') }}">#}
+{#                                {{ _('Messages') }}#}
+{#                                {% set new_likes = current_user.new_messages() %}#}
+{#                                <span id="Like_count" class="badge" sty;e="visibility: {% if new_likes %}visible#}
+{#                                                     {% else %}hidden {% endif %};">#}
+{#                                    {{ new_messages }}#}
+{#                                </span>#}
+{#                            </a>#}
+{#                        </li>#}
+                        <li><a href="{{ url_for('user', first_name=current_user.first_name) }}"><img src="/app/assets/person.svg" alt="" width="32" height="32" title="Calendar">Profile</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -46,15 +44,18 @@
 {% block content %}
     <div class="container">
         {% with messages = get_flashed_messages() %}
-            {% if messages %}
-                {% for message in messages %}
-                <div class="alert alert-info" role="alert">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
+        {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-info" role="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
         {% endwith %}
 
-        <div class="container">
-            {% block app_content %}{% endblock %}
-        </div>
+        {% block app_content %}{% endblock %}
     </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {{ moment.include_moment() }}
 {% endblock %}
